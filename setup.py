@@ -9,10 +9,10 @@ setup(
     license='MIT',
     url='https://github.com/kirillsulim/gitsnapshot',
     packages=find_packages(include=[
+        'gitsnapshot',
     ]),
     test_suite='tests',
     install_requires=[
-        'appdirs',
     ],
     classifiers=[
     ],

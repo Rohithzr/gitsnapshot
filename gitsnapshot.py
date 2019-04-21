@@ -10,7 +10,7 @@ import shutil
 class CheckoutType(Enum):
     BRANCH = 'branch'
     TAG = 'tag'
-    HASH = 'hash'
+    COMMIT = 'commit'
 
 
 class CheckoutCommand:
@@ -22,27 +22,30 @@ class CheckoutCommand:
 DEFAULT_COMMAND = CheckoutCommand(CheckoutType.BRANCH, 'master')
 
 
-def load_repo(path: str, repo_url: str, branch: str = None, tag: str = None, hash: str = None, use_existing: bool = False) -> Optional[str]:
+def load_repo(path: str, repo_url: str, branch: str = None, tag: str = None, commit: str = None, use_existing: bool = False) -> Optional[str]:
     """
-    Load repository from "repo_url" into "path" folder. Only one parameter from "branch", "tag" or "hash" must be
+    Load repository from "repo_url" into "path" folder. Only one parameter from "branch", "tag" or "commit" must be
     defined. If no one of these parameters are defined function use default value branch='master'.
 
     :param path: target folder for repository
     :param repo_url:  repository url
     :param branch: branch name
     :param tag: tag name
-    :param hash: commit hash
+    :param commit: commit hash
     :param use_existing: use existing repo
     :return: optional error description
     """
 
-    command, error = _extract_fetch_type(branch, tag, hash)
+    command, error = _extract_fetch_type(branch, tag, commit)
     if error:
         return error
 
     path = Path(path).expanduser().absolute()
 
     if path.exists() and not _dir_is_empty(path):
+        if not use_existing:
+            return 'Use of existing repository is forbidden'
+
         actual_origin, error = _remote_url(path)
         if error:
             return error
@@ -60,9 +63,16 @@ def checkout_existing_repo(path: Path, checkout: CheckoutCommand) -> Optional[st
 
     code = call(['git', '--git-dir', git_dir, '--work-tree', path, 'fetch', '--unshallow'])
     if code:
+        code = call(['git', '--git-dir', git_dir, '--work-tree', path, 'fetch'])
+    if code:
         return 'git fetch exited with code {}'.format(code)
 
-    code = call(['git', '--git-dir', git_dir, '--work-tree', path, 'checkout', 'origin/{}'.format(checkout.value)])
+    if checkout.type is CheckoutType.BRANCH:
+        code = call(['git', '--git-dir', git_dir, '--work-tree', path, 'checkout', 'origin/{}'.format(checkout.value)])
+    elif checkout.type in [CheckoutType.TAG, CheckoutType.COMMIT]:
+        code = call(['git', '--git-dir', git_dir, '--work-tree', path, 'checkout', checkout.value])
+    else:
+        return 'Unknown checkout type {}'.format(checkout.type)
     if code:
         return 'git fetch exited with code {}'.format(code)
 
@@ -74,7 +84,7 @@ def checkout_new_repo(path: Path, url: str, checkout: CheckoutCommand) -> Option
         code = call(['git', 'clone', '--branch', checkout.value, '--depth', '1', url, path])
         if code:
             return 'git clone exited with code {}'.format(code)
-    elif checkout.type is CheckoutType.HASH:
+    elif checkout.type is CheckoutType.COMMIT:
         code = call(['git', 'clone', url, path])
         if code:
             return 'git clone exited with code {}'.format(code)
@@ -86,13 +96,13 @@ def checkout_new_repo(path: Path, url: str, checkout: CheckoutCommand) -> Option
         return 'Unknown checkout type {}'.format(checkout.type)
 
 
-def _extract_fetch_type(branch: str, tag: str, hash: str) -> Tuple[Optional[CheckoutCommand], Optional[str]]:
+def _extract_fetch_type(branch: str, tag: str, commit: str) -> Tuple[Optional[CheckoutCommand], Optional[str]]:
     values = list(filter(
         lambda c: c.value is not None,
         [
             CheckoutCommand(CheckoutType.BRANCH, branch),
             CheckoutCommand(CheckoutType.TAG, tag),
-            CheckoutCommand(CheckoutType.HASH, hash)
+            CheckoutCommand(CheckoutType.COMMIT, commit)
         ]
     ))
 
