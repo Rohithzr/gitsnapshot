@@ -12,7 +12,7 @@ script:
 stages:
   - test
   - name: deploy
-    if: branch = master AND tag IS present
+    if: tag IS present
 jobs:
   include:
     - stage: test
@@ -27,4 +27,3 @@ jobs:
         on:
           distributions: sdist bdist_wheel
           repo: kirillsulim/gitsnapshot
-          all_branches: true
