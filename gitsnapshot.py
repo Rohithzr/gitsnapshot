@@ -59,7 +59,8 @@ def load_repo(path: str, repo_url: str, branch: str = None, tag: str = None, com
 
 
 def checkout_existing_repo(path: Path, checkout: CheckoutCommand) -> Optional[str]:
-    git_dir = path.joinpath('.git')
+    git_dir = path.joinpath('.git').as_posix()
+    path = path.as_posix()
 
     code = call(['git', '--git-dir', git_dir, '--work-tree', path, 'fetch', '--unshallow'])
     if code:
@@ -79,6 +80,8 @@ def checkout_existing_repo(path: Path, checkout: CheckoutCommand) -> Optional[st
 
 def checkout_new_repo(path: Path, url: str, checkout: CheckoutCommand) -> Optional[str]:
     path.mkdir(parents=True, exist_ok=True)
+    git_dir = path.joinpath('.git').as_posix()
+    path = path.as_posix()
 
     if checkout.type in [CheckoutType.BRANCH, CheckoutType.TAG]:
         code = call(['git', 'clone', '--branch', checkout.value, '--depth', '1', url, path])
@@ -88,7 +91,6 @@ def checkout_new_repo(path: Path, url: str, checkout: CheckoutCommand) -> Option
         code = call(['git', 'clone', url, path])
         if code:
             return 'git clone exited with code {}'.format(code)
-        git_dir = path.joinpath('.git')
         code = call(['git', '--git-dir', git_dir, '--work-tree', path, 'checkout', checkout.value])
         if code:
             return 'git checkout exited with code {}'.format(code)
