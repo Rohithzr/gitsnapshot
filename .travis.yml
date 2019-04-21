@@ -7,6 +7,5 @@ python:
   - "3.7"
 install:
   - python setup.py install
-  - pip install nox
 script:
-  - nox
+  - python setup.py test
