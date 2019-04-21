@@ -59,7 +59,8 @@ def load_repo(path: str, repo_url: str, branch: str = None, tag: str = None, com
 
 
 def checkout_existing_repo(path: Path, checkout: CheckoutCommand) -> Optional[str]:
-    git_dir = path.joinpath('.git')
+    git_dir = str(path.joinpath('.git'))
+    path = str(path)
 
     code = call(['git', '--git-dir', git_dir, '--work-tree', path, 'fetch', '--unshallow'])
     if code:
@@ -79,6 +80,8 @@ def checkout_existing_repo(path: Path, checkout: CheckoutCommand) -> Optional[st
 
 def checkout_new_repo(path: Path, url: str, checkout: CheckoutCommand) -> Optional[str]:
     path.mkdir(parents=True, exist_ok=True)
+    git_dir = str(path.joinpath('.git'))
+    path = str(path)
 
     if checkout.type in [CheckoutType.BRANCH, CheckoutType.TAG]:
         code = call(['git', 'clone', '--branch', checkout.value, '--depth', '1', url, path])
@@ -88,7 +91,6 @@ def checkout_new_repo(path: Path, url: str, checkout: CheckoutCommand) -> Option
         code = call(['git', 'clone', url, path])
         if code:
             return 'git clone exited with code {}'.format(code)
-        git_dir = path.joinpath('.git')
         code = call(['git', '--git-dir', git_dir, '--work-tree', path, 'checkout', checkout.value])
         if code:
             return 'git checkout exited with code {}'.format(code)
@@ -115,7 +117,8 @@ def _extract_fetch_type(branch: str, tag: str, commit: str) -> Tuple[Optional[Ch
 
 
 def _remote_url(repo_dir: Path) -> Tuple[Optional[str], Optional[str]]:
-    git_dir = repo_dir.joinpath('.git')
+    git_dir = str(repo_dir.joinpath('.git'))
+    repo_dir = str(repo_dir.as_posix())
 
     result = run(['git', '--git-dir', git_dir, '--work-tree', repo_dir, 'remote', 'get-url', 'origin'], stdout=PIPE, stderr=PIPE)
     if len(result.stderr) == 0 and len(result.stdout) != 0:
