@@ -5,16 +5,21 @@ python:
   - "3.5"
   - "3.6"
   - "3.7"
-install:
-  - python setup.py install
-script:
-  - python setup.py test
-deploy:
-  provider: pypi
-  user: kirillsulim
-  password:
-    secure: "3AL91JbyenQ7QKZpYwESSP6TXW27sFNUSCu1imujErja+N27sxi4AVKmoc3HTS+wcOM1wGK+MmoY/ovaCwDXrspnrMQrfzfV1PA/mGMfgRq+bzVkeBgn9+JzcsFqLzhQMJMEP0QNHu2RlEaaUBJCOxEABZVRG52+XVCuwggSMzo+nOyPi5esxD9xuvg1EqU9dSltqeGwhdqYPhppt4rIJOsGpGLdg9SeRD9lV8otmmsf+rQo732ak/atsJDXBvpt+NkUVUN8kBvDutznEAuKZM/SA1+MKhgHdlZAcqr8RvoICWE7GzTI0nooSPqXMckWopOV+13tRoq8vMxhW3hZDT9yZ6MBHUpTMlBTiD49hs8lvJucZS98q25C+7FajCbI5Xt3oBts6B3XNqgdohHPiRotstJePjkhjBzKCj3WFdCm0DjEkVMdTj8UqOPeMPtkSTBpVef14yqohvbBpM8IuKlG3agV68nvIH70qiZZIJEm2AYDdygqwLeRrPbDqXytkyRwMiAeB6e4PXtUgkn4Djj2mb+L8YYdmJk8E1iqVrbmM2/v64qKUuokfpIXtrKc46XHZ3j64tdrCQ5uJQOFOn9iHp2hOCs9tkjUZxtuIf3bk3SCpAZUEaD2+vF5SNk7MWON4JcVEOkJdIb7S0LmeJ6I0J2Q8N/As30mwpNT0Cs="
-  on:
-    tags: true
-    distributions: sdist bdist_wheel
-    repo: kirillsulim/gitsnapshot
+jobs:
+  include:
+    - stage: test
+      script:
+        - python setup.py test
+
+    - stage: deploy
+      python: "3.7"
+      script: skip
+      deploy:
+        provider: pypi
+        user: kirillsulim
+        password:
+          secure: "3AL91JbyenQ7QKZpYwESSP6TXW27sFNUSCu1imujErja+N27sxi4AVKmoc3HTS+wcOM1wGK+MmoY/ovaCwDXrspnrMQrfzfV1PA/mGMfgRq+bzVkeBgn9+JzcsFqLzhQMJMEP0QNHu2RlEaaUBJCOxEABZVRG52+XVCuwggSMzo+nOyPi5esxD9xuvg1EqU9dSltqeGwhdqYPhppt4rIJOsGpGLdg9SeRD9lV8otmmsf+rQo732ak/atsJDXBvpt+NkUVUN8kBvDutznEAuKZM/SA1+MKhgHdlZAcqr8RvoICWE7GzTI0nooSPqXMckWopOV+13tRoq8vMxhW3hZDT9yZ6MBHUpTMlBTiD49hs8lvJucZS98q25C+7FajCbI5Xt3oBts6B3XNqgdohHPiRotstJePjkhjBzKCj3WFdCm0DjEkVMdTj8UqOPeMPtkSTBpVef14yqohvbBpM8IuKlG3agV68nvIH70qiZZIJEm2AYDdygqwLeRrPbDqXytkyRwMiAeB6e4PXtUgkn4Djj2mb+L8YYdmJk8E1iqVrbmM2/v64qKUuokfpIXtrKc46XHZ3j64tdrCQ5uJQOFOn9iHp2hOCs9tkjUZxtuIf3bk3SCpAZUEaD2+vF5SNk7MWON4JcVEOkJdIb7S0LmeJ6I0J2Q8N/As30mwpNT0Cs="
+        on:
+          tags: true
+          distributions: sdist bdist_wheel
+          repo: kirillsulim/gitsnapshot
