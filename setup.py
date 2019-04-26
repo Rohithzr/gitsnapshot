@@ -1,5 +1,6 @@
 from setuptools import setup
 from os import path
+from encodings import utf_8
 
 
 project_directory = path.abspath(path.dirname(__file__))
