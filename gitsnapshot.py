@@ -22,7 +22,14 @@ class CheckoutCommand:
 DEFAULT_COMMAND = CheckoutCommand(CheckoutType.BRANCH, 'master')
 
 
-def load_repo(path: str, repo_url: str, branch: str = None, tag: str = None, commit: str = None, use_existing: bool = False) -> Optional[str]:
+def load_repo(
+        path: str,
+        repo_url: str,
+        branch: str = None,
+        tag: str = None,
+        commit: str = None,
+        use_existing: bool = False
+) -> Optional[str]:
     """
     Load repository from "repo_url" into "path" folder. Only one parameter from "branch", "tag" or "commit" must be
     defined. If no one of these parameters are defined function use default value branch='master'.
@@ -120,7 +127,11 @@ def _remote_url(repo_dir: Path) -> Tuple[Optional[str], Optional[str]]:
     git_dir = str(repo_dir.joinpath('.git'))
     repo_dir = str(repo_dir.as_posix())
 
-    result = run(['git', '--git-dir', git_dir, '--work-tree', repo_dir, 'remote', 'get-url', 'origin'], stdout=PIPE, stderr=PIPE)
+    result = run(
+        ['git', '--git-dir', git_dir, '--work-tree', repo_dir, 'remote', 'get-url', 'origin'],
+        stdout=PIPE,
+        stderr=PIPE
+    )
     if len(result.stderr) == 0 and len(result.stdout) != 0:
         return result.stdout.decode(sys.stdout.encoding).strip('\n '), None
     else:
