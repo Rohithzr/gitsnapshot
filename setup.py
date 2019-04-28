@@ -12,7 +12,7 @@ def load_from(file_name):
 
 setup(
     name='gitsnapshot',
-    version='0.1.1',
+    version='0.1.1post1',
     description='Python module to simplify loading of snapshot of git repository',
     long_description=load_from('README.md'),
     long_description_content_type='text/markdown',
