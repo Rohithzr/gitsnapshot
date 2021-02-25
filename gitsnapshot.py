@@ -69,18 +69,18 @@ def checkout_existing_repo(path: Path, checkout: CheckoutCommand) -> Optional[st
     git_dir = str(path.joinpath(".git"))
     path = str(path)
 
-    code = call(["git", "--git-dir", git_dir, "--work-tree", path, "fetch", "--unshallow"])
+    code = call(["git", "--git-dir", git_dir, "--work-tree", path, "fetch", "--unshallow", "--quiet"])
     if code:
-        code = call(["git", "--git-dir", git_dir, "--work-tree", path, "fetch"])
+        code = call(["git", "--git-dir", git_dir, "--work-tree", path, "fetch", "--quiet"])
     if code:
         return "git fetch exited with code {}".format(code)
 
     if checkout.type is CheckoutType.BRANCH:
-        code = call(["git", "--git-dir", git_dir, "--work-tree", path, "checkout", checkout.value])
+        code = call(["git", "--git-dir", git_dir, "--quiet", "--work-tree", path, "checkout", checkout.value])
         if code == 0:
             code = call(["git", "--git-dir", git_dir, "--work-tree", path, "pull"])
     elif checkout.type in [CheckoutType.TAG, CheckoutType.COMMIT]:
-        code = call(["git", "--git-dir", git_dir, "--work-tree", path, "checkout", checkout.value])
+        code = call(["git", "--git-dir", git_dir, "--quiet", "--work-tree", path, "checkout", checkout.value])
     else:
         return "Unknown checkout type {}".format(checkout.type)
     if code:
@@ -93,14 +93,14 @@ def checkout_new_repo(path: Path, url: str, checkout: CheckoutCommand) -> Option
     path = str(path)
 
     if checkout.type in [CheckoutType.BRANCH, CheckoutType.TAG]:
-        code = call(["git", "clone", "--branch", checkout.value, "--depth", "1", url, path])
+        code = call(["git", "clone", "--quiet", "--branch", checkout.value, "--depth", "1", url, path])
         if code:
             return "git clone exited with code {}".format(code)
     elif checkout.type is CheckoutType.COMMIT:
-        code = call(["git", "clone", url, path])
+        code = call(["git", "clone", "--quiet", url, path])
         if code:
             return "git clone exited with code {}".format(code)
-        code = call(["git", "--git-dir", git_dir, "--work-tree", path, "checkout", checkout.value])
+        code = call(["git", "--git-dir", git_dir, "--work-tree", path, "checkout", checkout.value, "--quiet"])
         if code:
             return "git checkout exited with code {}".format(code)
     else:
@@ -130,9 +130,8 @@ def _extract_fetch_type(branch: str, tag: str, commit: str) -> Tuple[Optional[Ch
 def _remote_url(repo_dir: Path) -> Tuple[Optional[str], Optional[str]]:
     git_dir = str(repo_dir.joinpath(".git"))
     repo_dir = str(repo_dir.as_posix())
-
     result = run(
-        ["git", "--git-dir", git_dir, "--work-tree", repo_dir, "remote", "get-url", "origin"], stdout=PIPE, stderr=PIPE
+        ["git", "--git-dir", git_dir, "--quiet", "--work-tree", repo_dir, "remote", "get-url", "origin"], stdout=PIPE, stderr=PIPE
     )
     if len(result.stderr) == 0 and len(result.stdout) != 0:
         return result.stdout.decode(sys.stdout.encoding).strip("\n "), None
